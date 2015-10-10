@@ -144,21 +144,17 @@ public class MainActivity extends Activity {
                 willOpenPage.setTitle("URLを入力してください");
                 willOpenPage.setView(editView);
 
-                willOpenPage.setPositiveButton(
-                        "OK",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                // OK クリック処理
-                                String url = editView.getText().toString();
-                                webView.loadUrl(url);
-                            }
-                    });
-                willOpenPage.setNegativeButton(
-                    "キャンセル",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                        }
-                    });
+                willOpenPage.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // OK クリック処理
+                        String url = editView.getText().toString();
+                        webView.loadUrl(url);
+                    }
+                });
+                willOpenPage.setNegativeButton("キャンセル", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
 
                 willOpenPage.show();
             }
@@ -172,7 +168,7 @@ public class MainActivity extends Activity {
 
         ActionBar actionBar = getActionBar();
         actionBar.hide();
-        
+
         attachViews();
         setBrowser();
         bindEvents(this);
@@ -229,21 +225,17 @@ public class MainActivity extends Activity {
                     willOpenPage.setMessage(ex.getAttribute("UserComment"));
 
                     final ExifInterface finalEx = ex;
-                    willOpenPage.setPositiveButton(
-                            "OK",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // OK クリック処理
-                                    String url = finalEx.getAttribute("UserComment");
-                                    webView.loadUrl(url);
-                                }
-                            });
-                    willOpenPage.setNegativeButton(
-                            "キャンセル",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                }
-                            });
+                    willOpenPage.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // OK クリック処理
+                            String url = finalEx.getAttribute("UserComment");
+                            webView.loadUrl(url);
+                        }
+                    });
+                    willOpenPage.setNegativeButton("キャンセル", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    });
 
                     willOpenPage.show();
                 } catch (IOException e) {
