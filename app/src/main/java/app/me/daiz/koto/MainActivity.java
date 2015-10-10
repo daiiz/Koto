@@ -64,8 +64,7 @@ public class MainActivity extends Activity {
             return false;
         }
 
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-        }
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {}
     }
 
     // WebViewの見えている部分だけをキャプチャして、
@@ -132,8 +131,7 @@ public class MainActivity extends Activity {
                     }
                 });
                 willCapturePage.setNegativeButton("キャンセル", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
+                    public void onClick(DialogInterface dialog, int which) {}
                 });
                 willCapturePage.show();
             }
@@ -157,25 +155,28 @@ public class MainActivity extends Activity {
 
         // URLを入力してページを開くボタン
         openUrlButton.setOnClickListener(new View.OnClickListener() {
+            String urlPlaceholder = "http://daiz713.github.io/0/";
+
             @Override
             public void onClick(View v) {
                 // WebページのURLを入力してもらい、ページを開く
                 final EditText editView = new EditText(MainActivity.this);
-                editView.setText("http://daiz713.github.io/0/");
+                editView.setHint(urlPlaceholder);
                 AlertDialog.Builder willOpenPage = new AlertDialog.Builder(MainActivity.this);
                 willOpenPage.setTitle("URLを入力してください");
                 willOpenPage.setView(editView);
 
                 willOpenPage.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // OK クリック処理
                         String url = editView.getText().toString();
+                        if (url.equals("")) {
+                            url = urlPlaceholder;
+                        }
                         webView.loadUrl(url);
                     }
                 });
                 willOpenPage.setNegativeButton("キャンセル", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
+                    public void onClick(DialogInterface dialog, int which) {}
                 });
 
                 willOpenPage.show();
@@ -223,14 +224,14 @@ public class MainActivity extends Activity {
 
 
     // uriからpathを取得するメソッド
-    public String getPath(int requestCode, int resultCode, Intent data) {
+    public String getPath(Intent data) {
         Uri uri = data.getData();
         this.grantUriPermission(this.getPackageName(), uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         this.grantUriPermission(this.getPackageName(), uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         final int takeFlags = data.getFlags()
                 & (Intent.FLAG_GRANT_READ_URI_PERMISSION
                 | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        // Check for the freshest data.
+
         getContentResolver().takePersistableUriPermission(uri, takeFlags);
 
         if (String.valueOf(uri).substring(0, 21).equals("content://com.android")) {
@@ -252,7 +253,7 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PIC_REQUEST_CODE && resultCode == RESULT_OK) {
 
-            String path = getPath(requestCode, resultCode, data);
+            String path = getPath(data);
             // 読む
             if (path != null) {
                 ExifInterface ex = null;
@@ -265,14 +266,12 @@ public class MainActivity extends Activity {
                     final ExifInterface finalEx = ex;
                     willOpenPage.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            // OK クリック処理
                             String url = finalEx.getAttribute("UserComment");
                             webView.loadUrl(url);
                         }
                     });
                     willOpenPage.setNegativeButton("キャンセル", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                        }
+                        public void onClick(DialogInterface dialog, int which) {}
                     });
 
                     willOpenPage.show();
