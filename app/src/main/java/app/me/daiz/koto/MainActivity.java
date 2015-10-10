@@ -1,5 +1,6 @@
 package app.me.daiz.koto;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
@@ -169,6 +170,9 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ActionBar actionBar = getActionBar();
+        actionBar.hide();
+        
         attachViews();
         setBrowser();
         bindEvents(this);
