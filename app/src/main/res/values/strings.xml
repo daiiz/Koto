@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Koto</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="capture_button">Capture</string>
+    <string name="image_open_button">Open Image</string>
+    <string name="url_open_button">Open URL</string>
+</resources>
