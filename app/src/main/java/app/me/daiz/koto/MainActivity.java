@@ -28,12 +28,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-
 public class MainActivity extends Activity {
     private WebView webView;
     private Button captureButton;
     private Button openImgButton;
     private Button openUrlButton;
+
+    int PIC_REQUEST_CODE = 1000;
 
     private String getBrowserUrl() {
         return webView.getUrl();
@@ -142,12 +143,15 @@ public class MainActivity extends Activity {
         openImgButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // WebページのURLを読み取って、ページを開くどうか問う
-                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-                i.setType("image/jpeg");
-                i.addCategory(Intent.CATEGORY_OPENABLE);
-                Intent chooserIntent = Intent.createChooser(i, "Pick Image");
-                startActivityForResult(chooserIntent, 1);
+                // WebページのURLを記述してある画像を選択してもらう
+
+                // TODO
+                // ACTION_GET_CONTENT にすれば、Google Photoからも吸えるようになるけれど
+                // URL取得の場合分けが増えるのでまた今度
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("image/jpeg");
+                startActivityForResult(intent, PIC_REQUEST_CODE);
             }
         });
 
@@ -185,7 +189,9 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         ActionBar actionBar = getActionBar();
-        actionBar.hide();
+        if(actionBar != null) {
+            actionBar.hide();
+        }
 
         attachViews();
         setBrowser();
@@ -217,22 +223,36 @@ public class MainActivity extends Activity {
 
 
     // uriからpathを取得するメソッド
-    public String getPath(Uri uri) {
-        ContentResolver cr = getContentResolver();
-        String[] projection = { MediaStore.Images.Media.DATA };
-        Cursor cursor = cr.query(uri, projection, null, null, null);
-        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-        cursor.moveToFirst();
+    public String getPath(int requestCode, int resultCode, Intent data) {
+        Uri uri = data.getData();
+        this.grantUriPermission(this.getPackageName(), uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        this.grantUriPermission(this.getPackageName(), uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        final int takeFlags = data.getFlags()
+                & (Intent.FLAG_GRANT_READ_URI_PERMISSION
+                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        // Check for the freshest data.
+        getContentResolver().takePersistableUriPermission(uri, takeFlags);
 
-        String result = cursor.getString(column_index);
-        return result;
+        if (String.valueOf(uri).substring(0, 21).equals("content://com.android")) {
+            String[] photo_split = String.valueOf(uri).split("%3A");
+            String imageURI = "content://media/external/images/media/"+photo_split[1];
+
+            ContentResolver cr = this.getContentResolver();
+            String[] columns = {MediaStore.Images.Media.DATA};
+            Cursor c = cr.query(Uri.parse(imageURI), columns, null, null, null);
+            c.moveToFirst();
+
+            File fileContents = new File(c.getString(0));
+            return fileContents.getAbsolutePath();
+        }
+        return "";
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 1 && resultCode == RESULT_OK) {
+        if (requestCode == PIC_REQUEST_CODE && resultCode == RESULT_OK) {
 
-            String path = getPath(data.getData());
+            String path = getPath(requestCode, resultCode, data);
             // 読む
             if (path != null) {
                 ExifInterface ex = null;
