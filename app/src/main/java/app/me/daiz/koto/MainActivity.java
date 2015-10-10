@@ -67,56 +67,74 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void bindEvents(final Activity self) {
+    // WebViewの見えている部分だけをキャプチャして、
+    // JPEGのexifコメントにURLを焼き込んで保存する。
+    private void captureWebView() {
+        webView.destroyDrawingCache();
+        Bitmap bitmap = Bitmap.createBitmap(webView.getDrawingCache(true));
+        final Canvas c = new Canvas();
+        c.drawBitmap(bitmap, 0, 0, null);
+        webView.draw(c);
+
+        final String SAVE_DIR = "/Koto/";
+        File file = new File(Environment.getExternalStorageDirectory().getPath() + SAVE_DIR);
+        try {
+            if (!file.exists()) {
+                file.mkdir();
+            }
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+
+        String fileName = "koto-" + Math.random() * 1000 + ".jpg";
+        String AttachName = file.getAbsolutePath() + "/" + fileName;
+
+        try {
+            FileOutputStream out = new FileOutputStream(AttachName);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            out.flush();
+            out.close();
+
+            // 書く
+            ExifInterface ex = new ExifInterface(AttachName);
+            ex.setAttribute("UserComment", getBrowserUrl());
+            ex.saveAttributes();
+
+            // 読む
+            ex = new ExifInterface(AttachName);
+            Toast.makeText(this, ex.getAttribute("UserComment"), Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ContentValues values = new ContentValues();
+        ContentResolver contentResolver = getContentResolver();
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        values.put(MediaStore.Images.Media.TITLE, fileName);
+        values.put("_data", AttachName);
+        contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+    }
+
+    private void bindEvents() {
         // キャプチャボタン
         captureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // キャプチャ画像を保存する
-                webView.destroyDrawingCache();
-                Bitmap bitmap = Bitmap.createBitmap(webView.getDrawingCache(true));
-                final Canvas c = new Canvas();
-                c.drawBitmap(bitmap, 0, 0, null);
-                webView.draw(c);
+                AlertDialog.Builder willCapturePage = new AlertDialog.Builder(MainActivity.this);
+                willCapturePage.setTitle("このページをキャプチャしますか？");
+                willCapturePage.setMessage("スクリーンショット画像は端末内に保存されます。");
 
-                final String SAVE_DIR = "/Koto/";
-                File file = new File(Environment.getExternalStorageDirectory().getPath() + SAVE_DIR);
-                try {
-                    if (!file.exists()) {
-                        file.mkdir();
+                willCapturePage.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // OK クリック処理
+                        captureWebView();
                     }
-                } catch (SecurityException e) {
-                    e.printStackTrace();
-                }
-
-                String fileName = "koto-" + Math.random() * 1000 + ".jpg";
-                String AttachName = file.getAbsolutePath() + "/" + fileName;
-
-                try {
-                    FileOutputStream out = new FileOutputStream(AttachName);
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                    out.flush();
-                    out.close();
-
-                    // 書く
-                    ExifInterface ex = new ExifInterface(AttachName);
-                    ex.setAttribute("UserComment", getBrowserUrl());
-                    ex.saveAttributes();
-
-                    // 読む
-                    ex = new ExifInterface(AttachName);
-                    Toast.makeText(self, ex.getAttribute("UserComment"), Toast.LENGTH_SHORT).show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                ContentValues values = new ContentValues();
-                ContentResolver contentResolver = getContentResolver();
-                values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-                values.put(MediaStore.Images.Media.TITLE, fileName);
-                values.put("_data", AttachName);
-                contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
+                });
+                willCapturePage.setNegativeButton("キャンセル", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
+                willCapturePage.show();
             }
         });
 
@@ -171,7 +189,7 @@ public class MainActivity extends Activity {
 
         attachViews();
         setBrowser();
-        bindEvents(this);
+        bindEvents();
         webView.loadUrl("http://www.google.co.jp");
     }
 
