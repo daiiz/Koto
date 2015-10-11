@@ -30,7 +30,7 @@ public class MainActivity extends Activity {
     private Button openUrlButton;
 
     int PIC_REQUEST_CODE = 1000;
-    String DEFAULT_PAGE_URL = "http://www.google.co.jp";
+    String DEFAULT_PAGE_URL = "http://daiz713.github.io/1/koto/index.html";
 
     private String getBrowserUrl() {
         return webView.getUrl();
