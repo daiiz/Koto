@@ -4,18 +4,12 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.media.ExifInterface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -103,16 +97,12 @@ public class MainActivity extends Activity {
             // 読む
             String pageURL = Exif.readPageURL(filePath);
             Toast.makeText(this, pageURL, Toast.LENGTH_SHORT).show();
+
+            ContentResolver contentResolver = getContentResolver();
+            Util.refreshPhotoGallery(contentResolver, filePath, fileName);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        ContentValues values = new ContentValues();
-        ContentResolver contentResolver = getContentResolver();
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-        values.put(MediaStore.Images.Media.TITLE, fileName);
-        values.put("_data", filePath);
-        contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
     }
 
     private void bindEvents() {
@@ -221,61 +211,34 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    // uriからpathを取得するメソッド
+    // jpgファイルに対して、contentURIからpathを取得する
     public String getPath(Intent data) {
-        Uri uri = data.getData();
-        this.grantUriPermission(this.getPackageName(), uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        this.grantUriPermission(this.getPackageName(), uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        final int takeFlags = data.getFlags()
-                & (Intent.FLAG_GRANT_READ_URI_PERMISSION
-                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-
-        getContentResolver().takePersistableUriPermission(uri, takeFlags);
-
-        if (String.valueOf(uri).substring(0, 21).equals("content://com.android")) {
-            String[] photo_split = String.valueOf(uri).split("%3A");
-            String imageURI = "content://media/external/images/media/"+photo_split[1];
-
-            ContentResolver cr = this.getContentResolver();
-            String[] columns = {MediaStore.Images.Media.DATA};
-            Cursor c = cr.query(Uri.parse(imageURI), columns, null, null, null);
-            c.moveToFirst();
-
-            File fileContents = new File(c.getString(0));
-            return fileContents.getAbsolutePath();
-        }
-        return "";
+        ContentResolver cr = getContentResolver();
+        return Util.getJpegFilePath(cr, data);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PIC_REQUEST_CODE && resultCode == RESULT_OK) {
-
             String path = getPath(data);
             // 読む
             if (path != null) {
-                ExifInterface ex = null;
-                try {
-                    ex = new ExifInterface(path);
-                    AlertDialog.Builder willOpenPage = new AlertDialog.Builder(this);
-                    willOpenPage.setTitle("下記のウェブサイトにアクセスしますか？");
-                    willOpenPage.setMessage(ex.getAttribute("UserComment"));
+                final String pageURL = Exif.readPageURL(path);
+                AlertDialog.Builder willOpenPage = new AlertDialog.Builder(this);
+                willOpenPage.setTitle("下記のウェブサイトにアクセスしますか？");
+                willOpenPage.setMessage(pageURL);
 
-                    final ExifInterface finalEx = ex;
-                    willOpenPage.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            String url = finalEx.getAttribute("UserComment");
-                            webView.loadUrl(url);
-                        }
-                    });
-                    willOpenPage.setNegativeButton("キャンセル", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {}
-                    });
+                willOpenPage.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        webView.loadUrl(pageURL);
+                    }
+                });
+                willOpenPage.setNegativeButton("キャンセル", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
 
-                    willOpenPage.show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                willOpenPage.show();
             }
         }
     }
