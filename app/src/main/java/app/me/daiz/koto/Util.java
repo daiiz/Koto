@@ -45,7 +45,7 @@ public class Util {
 
         if (String.valueOf(uri).substring(0, 21).equals("content://com.android")) {
             String[] photo_split = String.valueOf(uri).split("%3A");
-            String imageURI = "content://media/external/images/media/"+photo_split[1];
+            String imageURI = "content://media/external/images/media/" + photo_split[1];
 
             ContentResolver cr = contentResolver;
             String[] columns = {MediaStore.Images.Media.DATA};

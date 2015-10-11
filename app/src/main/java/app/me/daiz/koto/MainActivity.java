@@ -222,21 +222,29 @@ public class MainActivity extends Activity {
         if (requestCode == PIC_REQUEST_CODE && resultCode == RESULT_OK) {
             String path = getPath(data);
             // 読む
-            if (path != null) {
+            if (path != "") {
                 final String pageURL = Exif.readPageURL(path);
                 AlertDialog.Builder willOpenPage = new AlertDialog.Builder(this);
-                willOpenPage.setTitle("下記のウェブサイトにアクセスしますか？");
-                willOpenPage.setMessage(pageURL);
 
-                willOpenPage.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        webView.loadUrl(pageURL);
-                    }
-                });
-                willOpenPage.setNegativeButton("キャンセル", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
-                });
+                if (pageURL.equals("")) {
+                    willOpenPage.setTitle("この画像にはURLが記録されていません。");
+                    willOpenPage.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    });
+                }else {
+                    willOpenPage.setTitle("下記のウェブサイトにアクセスしますか？");
+                    willOpenPage.setMessage(pageURL);
+                    willOpenPage.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            webView.loadUrl(pageURL);
+                        }
+                    });
+                    willOpenPage.setNegativeButton("キャンセル", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    });
+                }
 
                 willOpenPage.show();
             }

@@ -1,7 +1,6 @@
 package app.me.daiz.koto;
 
 import android.media.ExifInterface;
-
 import java.io.IOException;
 
 public class Exif {
@@ -25,7 +24,7 @@ public class Exif {
         try {
             ExifInterface ex = new ExifInterface(jpegFilePath);
             return ex.getAttribute("UserComment");
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             e.printStackTrace();
         }
         return "";
