@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -86,7 +87,8 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
 
-        String fileName = "koto-" + Math.random() * 1000 + ".jpg";
+        String fileName = Util.getJpegFileName();
+        Log.i(">>>>>> ", fileName);
         String AttachName = file.getAbsolutePath() + "/" + fileName;
 
         try {
