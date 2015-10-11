@@ -36,6 +36,7 @@ public class MainActivity extends Activity {
     private Button openUrlButton;
 
     int PIC_REQUEST_CODE = 1000;
+    String DEFAULT_PAGE_URL = "http://www.google.co.jp";
 
     private String getBrowserUrl() {
         return webView.getUrl();
@@ -88,23 +89,20 @@ public class MainActivity extends Activity {
         }
 
         String fileName = Util.getJpegFileName();
-        Log.i(">>>>>> ", fileName);
-        String AttachName = file.getAbsolutePath() + "/" + fileName;
+        String filePath = file.getAbsolutePath() + "/" + fileName;
 
         try {
-            FileOutputStream out = new FileOutputStream(AttachName);
+            FileOutputStream out = new FileOutputStream(filePath);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
             out.flush();
             out.close();
 
-            // 書く
-            ExifInterface ex = new ExifInterface(AttachName);
-            ex.setAttribute("UserComment", getBrowserUrl());
-            ex.saveAttributes();
+            // 書き込む
+            Exif.writePageURL(filePath, getBrowserUrl());
 
             // 読む
-            ex = new ExifInterface(AttachName);
-            Toast.makeText(this, ex.getAttribute("UserComment"), Toast.LENGTH_SHORT).show();
+            String pageURL = Exif.readPageURL(filePath);
+            Toast.makeText(this, pageURL, Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -113,7 +111,7 @@ public class MainActivity extends Activity {
         ContentResolver contentResolver = getContentResolver();
         values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
         values.put(MediaStore.Images.Media.TITLE, fileName);
-        values.put("_data", AttachName);
+        values.put("_data", filePath);
         contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
     }
 
@@ -128,7 +126,6 @@ public class MainActivity extends Activity {
 
                 willCapturePage.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // OK クリック処理
                         captureWebView();
                     }
                 });
@@ -199,7 +196,7 @@ public class MainActivity extends Activity {
         attachViews();
         setBrowser();
         bindEvents();
-        webView.loadUrl("http://www.google.co.jp");
+        webView.loadUrl(DEFAULT_PAGE_URL);
     }
 
     @Override
