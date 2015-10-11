@@ -222,7 +222,7 @@ public class MainActivity extends Activity {
         if (requestCode == PIC_REQUEST_CODE && resultCode == RESULT_OK) {
             String path = getPath(data);
             // 読む
-            if (path != "") {
+            if (!path.equals("")) {
                 final String pageURL = Exif.readPageURL(path);
                 AlertDialog.Builder willOpenPage = new AlertDialog.Builder(this);
 
