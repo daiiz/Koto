@@ -155,13 +155,13 @@ public class MainActivity extends Activity {
 
         // URLを入力してページを開くボタン
         openUrlButton.setOnClickListener(new View.OnClickListener() {
-            String urlPlaceholder = "http://daiz713.github.io/0/";
-
             @Override
             public void onClick(View v) {
                 // WebページのURLを入力してもらい、ページを開く
                 final EditText editView = new EditText(MainActivity.this);
-                editView.setHint(urlPlaceholder);
+                final String urlPlaceholder = getBrowserUrl();
+                editView.setText(urlPlaceholder);
+                editView.selectAll();
                 AlertDialog.Builder willOpenPage = new AlertDialog.Builder(MainActivity.this);
                 willOpenPage.setTitle("URLを入力してください");
                 willOpenPage.setView(editView);
@@ -221,7 +221,6 @@ public class MainActivity extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
-
 
     // uriからpathを取得するメソッド
     public String getPath(Intent data) {
